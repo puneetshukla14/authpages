@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function SignupPage() {
@@ -32,13 +32,19 @@ export default function SignupPage() {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          username: form.username,
+          email: form.email.trim() === '' ? undefined : form.email,
+          password: form.password,
+        }),
       });
+
+      const data = await res.json();
 
       if (res.ok) {
         router.push('/setup-profile');
       } else {
-        setError('Signup failed. Try a different username.');
+        setError(data.message || 'Signup failed');
       }
     } catch {
       setError('Something went wrong. Please try again later.');
@@ -60,60 +66,60 @@ export default function SignupPage() {
           Join a clean, fast chat platform. Built for real conversations—no distractions.
         </p>
 
-<form onSubmit={handleSubmit} style={styles.form}>
-  <div style={styles.inputGroup}>
-    <label style={styles.label}>Username</label>
-    <input
-      type="text"
-      placeholder="Username"
-      value={form.username}
-      onChange={(e) => setForm({ ...form, username: e.target.value })}
-      style={styles.input}
-      required
-    />
-  </div>
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Username</label>
+            <input
+              type="text"
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.target.value })}
+              placeholder="Username"
+              style={styles.input}
+              required
+            />
+          </div>
 
-  <div style={styles.inputGroup}>
-    <label style={styles.label}>Email (optional)</label>
-    <input
-      type="email"
-      placeholder="Email"
-      value={form.email ?? ''}
-      onChange={(e) => setForm({ ...form, email: e.target.value })}
-      style={styles.input}
-    />
-  </div>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Email (optional)</label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              placeholder="Email"
+              style={styles.input}
+            />
+          </div>
 
-  <div style={styles.inputGroup}>
-    <label style={styles.label}>Password</label>
-    <input
-      type="password"
-      placeholder="Password"
-      value={form.password}
-      onChange={(e) => setForm({ ...form, password: e.target.value })}
-      style={styles.input}
-      required
-    />
-  </div>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Password</label>
+            <input
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              placeholder="Password"
+              style={styles.input}
+              required
+            />
+          </div>
 
-  <div style={styles.inputGroup}>
-    <label style={styles.label}>Confirm Password</label>
-    <input
-      type="password"
-      placeholder="Confirm Password"
-      value={form.confirmPassword}
-      onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-      style={styles.input}
-      required
-    />
-  </div>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Confirm Password</label>
+            <input
+              type="password"
+              value={form.confirmPassword}
+              onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+              placeholder="Confirm Password"
+              style={styles.input}
+              required
+            />
+          </div>
 
-  {error && <p style={styles.error}>{error}</p>}
+          {error && <p style={styles.error}>{error}</p>}
 
-  <button type="submit" style={styles.button}>
-    Sign Up
-  </button>
-</form>
+          <button type="submit" style={styles.button}>
+            Sign Up
+          </button>
+        </form>
 
         <p style={styles.footerText}>
           Already have an account?{' '}
@@ -143,7 +149,6 @@ const styles = {
     width: '100%',
     maxWidth: '460px',
     boxShadow: '0 20px 40px rgba(0, 0, 0, 0.08)',
-    transition: 'box-shadow 0.3s ease',
   },
   title: {
     fontSize: '2rem',
@@ -180,7 +185,6 @@ const styles = {
     borderRadius: '10px',
     border: '1px solid #ddd',
     backgroundColor: '#fafafa',
-    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
     outline: 'none',
   },
   button: {
@@ -193,8 +197,6 @@ const styles = {
     border: 'none',
     borderRadius: '10px',
     cursor: 'pointer',
-    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.08)',
-    transition: 'background 0.3s ease, transform 0.2s ease',
   },
   error: {
     color: '#e11d48',
