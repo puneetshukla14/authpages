@@ -1,22 +1,22 @@
+// middleware.ts
 import { NextRequest, NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 
 export function middleware(req: NextRequest) {
   const token = req.cookies.get('token')?.value;
-  const url = req.nextUrl.clone();
 
-  const protectedRoutes = ['/dashboard', '/setup-profile', '/profile'];
-  const isProtected = protectedRoutes.some(route =>
-    req.nextUrl.pathname.startsWith(route)
-  );
-
-  if (isProtected && !token) {
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  return NextResponse.next();
+  try {
+    jwt.verify(token, process.env.JWT_SECRET!);
+    return NextResponse.next();
+  } catch (err) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/setup-profile/:path*', '/profile/:path*'],
+  matcher: ['/dashboard'],
 };
