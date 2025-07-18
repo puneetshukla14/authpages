@@ -1,3 +1,4 @@
+// [app/api/auth/login/route.ts]
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDB } from '@/lib/mongoose';
 import User from '@/models/User';
@@ -23,8 +24,10 @@ export async function POST(req: NextRequest) {
 
   response.cookies.set('token', token, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
     path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24 * 7,
   });
 
   return response;
